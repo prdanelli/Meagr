@@ -269,7 +269,7 @@ class Config {
 		}
 
 		//get our configs ... 
-		if (is_callable('\\' . $app_name . '\Core\Config', $method)) { 
+		if (is_callable('\Meagr\Config', $method)) { 
 			$core = self::$method();
 		}
 
