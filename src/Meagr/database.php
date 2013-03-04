@@ -357,9 +357,7 @@ class Database implements \Iterator, \ArrayAccess, \Countable {
             $this->_prep($query_string)->execute($array);
             //if we got to here, we're doing ok, so commit
             // $this->_transCommit();
-            // Log::add('Ran query: ' . $query_string, __METHOD__, 'success');
             
-            //v(static::$db->lastInsertId());
             //return the last inserted id
             return static::$db->lastInsertId();           
 
@@ -367,7 +365,6 @@ class Database implements \Iterator, \ArrayAccess, \Countable {
         } catch(PDOException $e) {
             //bad things happen to good people, so rollback
             // $this->_transRollback();
-            // Log::add('Failed to run query: ' . $query_string . ' ' . $e->getMessage(), __METHOD__, 'error');
         }
     }
 
@@ -406,7 +403,6 @@ class Database implements \Iterator, \ArrayAccess, \Countable {
             $this->_prep($query_string)->execute($array);
             //if we got to here, we're doing ok, so commit
             // $this->_transCommit();
-            // Log::add('Ran query: ' . $query_string, __METHOD__, 'success');
             
             //return the id
             return $array['id'];              
@@ -415,8 +411,6 @@ class Database implements \Iterator, \ArrayAccess, \Countable {
         } catch(PDOException $e) {
             //bad things happen to good people, so rollback
             // $this->_transRollback();
-            // 
-            // Log::add('Failed to run query: ' . $query_string . ' ' . $e->getMessage(), __METHOD__, 'error');
         }
     }
 

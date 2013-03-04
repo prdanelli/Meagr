@@ -161,8 +161,6 @@ class Schema extends Database {
 	function alterTable() {
 		$class = $this->class;
 
-		Log::add('Altering table: ' . $this->table, __METHOD__, 'info');
-
 		//if the table exists, check the schema is correct
 		$schema_sql = "SHOW COLUMNS FROM " . $this->table;
 		$schema_check = static::$db->query($schema_sql)->fetchAll(\PDO::FETCH_ASSOC);

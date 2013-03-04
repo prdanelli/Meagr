@@ -268,8 +268,6 @@ class Config {
 			throw new MeagrException('No Config method name supplied to ' . __METHOD__);
 		}
 
-		// Log::add('Loading settings: ' . $method, __METHOD__, 'success');
-
 		//get our configs ... 
 		if (is_callable('\\' . $app_name . '\Core\Config', $method)) { 
 			$core = self::$method();

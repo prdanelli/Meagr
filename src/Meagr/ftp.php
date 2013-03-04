@@ -114,13 +114,11 @@ Class FTP {
 
 		// check connection
 		if (($this->connection === false) || ($login_result === false)) {
-			Log::add('FTP connection has failed! ' . $this->host . ' for user ' . $this->username, __METHOD__, 'error');
 
 			throw new MeagrException('Attempted to connect to ' . $this->host . ' for user ' . $this->username);
 			return false;
 		} 
 
-		Log::add('Connected to ' . $this->host . ', for user ' . $this->username, __METHOD__, 'success');
 		$this->login_check = true;
 		return $this;		
 	}
@@ -138,15 +136,11 @@ Class FTP {
 		//if the directory could not be successfully created
 		if (! ftp_mkdir($this->connection, $directory)) {
 
-			//log the error
-			Log::add('Failed creating directory "' . $directory . '"', __METHOD__, 'error');
-
 			//throw a new exception
 			throw new MeagrException('Failed creating directory "' . $directory . '"');
 			return false;
 		} 
 			
-		Log::add('Directory "' . $directory . '" created successfully', __METHOD__, 'error');
 		return $this;
 	}
 
@@ -182,15 +176,11 @@ Class FTP {
 		//check if our upload failed
 		if (! ftp_delete($this->connection, $file)) {
 
-			//log the error
-			Log::add('The file delete "'. $file .'" failed', __METHOD__, 'error');
-
 			//throw a new exception
 			throw new MeagrException('The file delete "'. $file.'" failed');
 			return false;
 		} 
 
-		Log::add('Deleted "' . $file . '"', __METHOD__, 'success');
 		return $this;		
 	}
 
@@ -270,15 +260,11 @@ Class FTP {
 		//check if our upload failed
 		if (! ftp_chmod($this->connection, octdec(str_pad($mode, 4, '0', STR_PAD_LEFT)), $file)) {
 
-			//log the error
-			Log::add('The file "'. $file .'" could not have it permissions changed', __METHOD__, 'error');
-
 			//throw a new exception
 			throw new MeagrException('The file permissions for "'. $file.'" could not be updated');
 			return false;
 		} 
 
-		Log::add('chmod "' . $file . '" to ' . $mode, __METHOD__, 'success');
 		return $this;			
 	}
 
@@ -308,9 +294,6 @@ Class FTP {
 		}
 
 		if (! ftp_rename($this->connection, $file, $new_file)) {
-
-			//log the error
-			Log::add('The file "'. $file .'" could not be renamed to "'. $new_file .'"', __METHOD__, 'error');
 
 			//throw a new exception
 			throw new MeagrException('The file "'. $file .'" could not be renamed to "'. $new_file .'"');			
@@ -347,15 +330,11 @@ Class FTP {
 		//check if our upload failed
 		if (! ftp_put($this->connection, $file_to, $file_from, $mode)) {
 
-			//log the error
-			Log::add('The file upload "'. $file_from .'" failed', __METHOD__, 'error');
-
 			//throw a new exception
 			throw new MeagrException('The file upload "'. $file_from .'" failed');
 			return false;
 		} 
 
-		Log::add('Uploaded "' . $file_from . '" as "' . $file_to, __METHOD__, 'success');
 		return $this;
 	}
 
@@ -369,13 +348,11 @@ Class FTP {
 	*/	
 	public function cd($directory) {
 		if (! ftp_chdir($this->connection, $directory)) {
-			Log::add('Couldn\'t change to directory "'. $directory .'"', __METHOD__, 'success');
 			throw new MeagrException('Couldn\'t change to directory "'. $directory .'"');
 
 			return false;
 		} 
 
-		Log::add('Current directory is now: ' . ftp_pwd($this->connection), __METHOD__, 'error');
 		$this->pwd = $directory;
 		return $this;		
 	}

@@ -65,8 +65,6 @@ class Email {
 		//init our email instance
 		$this->email = new PHPMailer(true);
 
-        Log::add('Init new PHPMailer', __METHOD__, 'success');
-
 		//check if we want to use smtp and set all our required values from the config
 		if ($config['smtp'] === true) {
 
