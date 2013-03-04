@@ -87,8 +87,8 @@ class Config {
 		return array(
 
 				// //default system routes
-				array('__HOME__' => '\{core}\Controller::GET_index'),
-				array('__404__' => '\{core}\Controller::GET_404'), 
+				array('__HOME__' => '\Meagr\Controller::GET_index'),
+				array('__404__' => '\Meagr\Controller::GET_404'), 
 
 				//mvc
 				array('{domain}/{class}/{method}/' => '\{modules}\{controllers}\{class}::{method}'), 
