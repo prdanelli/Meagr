@@ -13,14 +13,14 @@ namespace Meagr;
 
 class Router {
 
-	//our instance wrapper
-	private static $instance;
+    //our instance wrapper
+    private static $instance;
 
     //our matching route
     public $route;    
 
     //our routes array will contain all of our route objects
-	public $routes = array();
+    public $routes = array();
 
     //the current uri segments
     public $uri_segments = array(); 
@@ -50,14 +50,14 @@ class Router {
     * singleton instantiation
     *
     * @return object
-    */	
+    */  
     public static function init() {
         if (is_null(self::$instance)) {
             self::$instance = new self();
         }
 
         return self::$instance;
-    }	
+    }   
 
 
     /**
@@ -78,7 +78,7 @@ class Router {
         $this->route_map = Config::settings('routeMap');
 
         //add any additional routes, adding them to the route map
-        $this->additionalRouteMaps();    	
+        $this->additionalRouteMaps();       
     }
 
 
@@ -176,7 +176,7 @@ class Router {
     *
     * @return object
     */  
-	function mapRoutes() {
+    function mapRoutes() {
         array_map(array($this, 'translateRoute'), $this->getRoutes());     
         return $this;    
     }
@@ -242,7 +242,7 @@ class Router {
             //put back together
             $pattern = $class . '::' . $this->request_type . '_' . $method;
         }
-        
+
         //update the mapped pattern, keeping the original pattern
         $object->setMappedPattern($pattern);
         $object->setMappedUri($uri);
@@ -381,13 +381,6 @@ class Router {
             //capitalise each work
             foreach($array as $key => $section) {
                 $array[$key] = ucwords($section);
-            }
-
-            //make sure we dont add the app namespace twice
-            if (! in_array(ucwords(APP_FOLDER_NAME), $array)) {
-                
-                 //add the app folder name to the front of our class namespace
-                array_unshift($array, ucwords(APP_FOLDER_NAME));               
             }
 
             //create our new class name from the sections
