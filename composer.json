@@ -20,6 +20,9 @@
     "autoload": {
         "psr-0": { 
             "Meagr": "src/" 
-        }
+        }, 
+         "files": [
+            "src/Meagr/helpers.php"
+        ]       
     }
 }

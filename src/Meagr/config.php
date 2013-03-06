@@ -48,7 +48,7 @@ class Config {
 	*/
 	public static function meta() {
 		return array(
-				'title' => 'Welcome to Meagr', 
+				'title' => __METHOD__, 
 				'description' => 'Cheap, so you dont have to be',
 				'keywords' => 'meagr, php, framework, one love, open source'
 			);
@@ -62,7 +62,6 @@ class Config {
 	*/
 	public static function routeMap() {
 		return array(
-				'{core}' => 'core',
 				'{modules}' => 'modules',
 				'{controllers}' => 'controllers', 
 				'{subdomain}' => trim(SITE_SUBDOMAIN, '\\'), 
@@ -101,22 +100,6 @@ class Config {
 
 				//sub.controller
 				array('{subdomain}.{domain}/{class}/{method}/' => '\{modules}\{subdomain}\{class}\{controllers}\{class}::{method}'),
-			);
-	}
-
-
-	/**
-	* Files to be loaded first
-	*
-	* @return array
-	*/
-	public static function bootstrap() {
-		return array(				
-				CORE_PATH . '/core/helpers.php',
-				CORE_PATH . '/core/debug.php',
-				CORE_PATH . '/core/timer.php',
-				CORE_PATH . '/core/error.php',		
-				CORE_PATH . '/meagrexception.php'
 			);
 	}
 
@@ -261,7 +244,7 @@ class Config {
 	*/
 	public static function settings($method = null) {
 
-		$app_name = ucwords(APP_FOLDER_NAME);
+		$module_array = $core_array = array();
 
 		//make sure we have a method
 		if (is_null($method)) {
@@ -269,34 +252,34 @@ class Config {
 		}
 
 		//get our configs ... 
-		if (is_callable('\Meagr\Config', $method)) { 
-			$core = self::$method();
+		//check for base app config
+		$class = new self; 
+		$reflection = new \ReflectionClass($class);		
+		if ($reflection->hasMethod($method)) {
+			$core_array = call_user_func_array(array($class, $method), array()); 
 		}
 
 		//check for base app config
-		$class = '\\' . $app_name . '\modules\Config\Config';
-		if (class_exists($class) and is_callable($class, $method)) {
-			$app = $class::$method(); 
+		$class = '\Modules\Config';			
+		if (class_exists($class)) {
+			$reflection = new \ReflectionClass($class);		
+
+			if ($reflection->hasMethod($method)) {
+				$module_array = call_user_func_array(array($class, $method), array()); 
+			}
 		}
 
 		//check for environment dependant config (which takes prescident)
-		$class = '\\' . $app_name . '\modules\\'. SITE_SUBDOMAIN .'Config\\' . ucwords(ENVIRONMENT) . '\Config'; 
-		if (class_exists($class) and is_callable($class, $method)) {
-			$app = $class::$method(); 
-		}
+		$class = '\modules\\'. SITE_SUBDOMAIN .'Config\\' . ucwords(ENVIRONMENT) . '\Config';
+		if (class_exists($class)) {
+			$reflection = new \ReflectionClass($class);		
 
-		//if both are present, merge and return
-		if (is_array($app) and is_array($core)) { 
-			return self::parseArgs($app, $core);
+			if ($reflection->hasMethod($method)) {
+				$module_array = call_user_func_array(array($class, $method), array()); 
+			}
+		}			
 
-		//if app is present return array
-		} elseif (is_array($app)) { 
-			return $app; 
-
-		//if core is present, return array as default 
-		} elseif(is_array($core)) { 
-			return $core; 
-		}
+		return self::parseArgs($module_array, $core_array);
 	}
 
 
