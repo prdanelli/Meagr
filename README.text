@@ -6,22 +6,26 @@ A small, focused framework for small-ish projects that require an aspect of H/MV
 Folder structure
 ----------------
 
-Meagr allows you some flexibility when setting up your application. The main set of system classes can be found in 
+Meagr allows you some flexibility when setting up your application. The main set of system classes can be found in the composer package which is added to your vendor folder with the following require command in your composer.json file
 
     :::php
-    /meagr/core/
+    "require": {
+        "prwhitehead/meagr": "dev-master"
+    }
+
+Once the files have been installed and ready to be used, you must setup your modules / application folder. Because of the way the non-composer autoloader works, whatever folder you place your files will define your namespacing.     
 
 The files are required for the routing, config etc. The 'modules' folder if where your application will sit. It was called 'modules' and not 'app', or 'application' as each module could be a seperate micro-application, performing a certain set of tasks. 
 
 Modules modules should be namespaced as follows
 
     :::php  
-    /Meagr/Modules/YourModulesName
+    /Modules/YourModulesName
 
 This namespace matches the folder name and structure of your controllers/models/views folders
 
     :::php  
-    /Meagr/Modules/YourModulesName/Controllers/Classname
+    /Modules/YourModulesName/Controllers/Classname
 
 Sub controllers can also be used by using the underscore in the filename. 
 
@@ -31,7 +35,7 @@ Sub controllers can also be used by using the underscore in the filename.
 Would first look to find an Admin controller class, which contained a GET_user method and pass in 'create' as a variable. The next check would look to find the Admin_User controller which is in admin_user.php within the admin app folder
 
     :::php  
-    /app/admin/controllers/admin_user.php
+    /modules/admin/controllers/admin_user.php
 
 For the method:
 
@@ -49,12 +53,12 @@ By default a website can use either an MVC or HMVC structure, which uses:
 Which would route to either: 
 
     :::php 
-    app/news/controllers/news.php
+    modules/news/controllers/news.php
 
 or: 
 
     :::php 
-    app/controllers/news.php
+    modules/controllers/news.php
 
 The HMVC structure takes presidence and over MVC which is the default. 
 
@@ -62,7 +66,7 @@ If we were using the HMVC structure for our app modules, the system will look fo
 
     :::php 
     <?  
-    Meagr\Modules\News\Controllers\News::GET_latest();
+    Modules\News\Controllers\News::GET_latest();
 
 If there is an even number of arguments the system will attempt to assign them to key => value pairs. So a URL as follows: 
 
@@ -127,7 +131,7 @@ To pass data to the a simple view file which is located in the sites default app
 
     :::php  
     <?
-    Core\View::view('test', compact('data'));
+    \Meagr\View::view('test', compact('data'));
 
 Using the Model
 ---------------
@@ -149,7 +153,7 @@ Returns:
     <?
     Array
     (
-        [0] => Meagr\Modules\News\Models\News Object
+        [0] => Modules\News\Models\News Object
             (
                 [id] => 4
                 [title] => testing
@@ -159,7 +163,7 @@ Returns:
                 [created_at] => 0000-00-00 00:00:00
                 [updated_at] => 0000-00-00 00:00:00
             )
-       [1] => Meagr\Modules\News\Models\News Object
+       [1] => Modules\News\Models\News Object
             (
                 [id] => 3
                 [title] => testing
@@ -177,8 +181,10 @@ Because the Database class impliments the PHP SPL ArrayAccess we can also do thi
     <?    
     //get member
     $member = Modules\Models\Member::init()->where('id', $id);
+
     //the count function will trigger the go() method and generate our results (lazy loading)
     if (count($member)) {
+
         //now we have access to member
         p($member);
     }
@@ -186,15 +192,22 @@ Because the Database class impliments the PHP SPL ArrayAccess we can also do thi
 Config
 ------
 
-In order to use different config's for your development / production / staging servers etc, add a 'config' folder to your app folder with the environment as a sub folder and a config.php file which is properly namespaced within that.
+In order to use different config's for your development / production / staging servers etc, add a 'config' folder to your app folder with the environment as a sub folder and a config.php file which is properly namespaced within that. The envionrment to be used is set with the "ENVIRONMENT" constant, so:
+
+    :::php
+    <? 
+    define("ENVIRONMENT", 'production');
+
+Would mean the system looks for the following class:    
 
     ::php  
-    namespace Meagr\Modules\Config\Production; 
+    <? 
+    namespace Modules\Config\Production\Config(); 
 
-Would match: 
+Which would match: 
 
     :::php  
-    /lightr/app/config/production/config.php
+    modules/config/production/config.php
 
 As a fail back, if you wish to just use a single config file in your app, include it within the base config directory and it will be included. 	
 
@@ -220,7 +233,7 @@ Instantiate Bcrypt();
 
     :::php  
     <?
-    $b = new Core\Bcrypt();
+    $b = new \Meagr\Bcrypt();
 
 Hash your password / input data
 
@@ -253,25 +266,25 @@ Init the timer with your name, in this case 'db'
 
     :::php  
     <?
-    Core\Timer::init('db');
+    \Meagr\Timer::init('db');
 
 Echo the difference in the time since the timer was started
 
     :::php  
     <?
-    echo Core\Timer::init('db')->diff(); 
+    echo \Meagr\Timer::init('db')->diff(); 
 
 alternatively you can use: 
 
     :::php  
     <?
-    Core\Timer::init('db')->stop();
+    \Meagr\Timer::init('db')->stop();
 
 ... sometime later
 
     :::php  
     <?
-    echo Core\Timer::init('db')->diff();
+    echo \Meagr\Timer::init('db')->diff();
 
 Member
 ------
@@ -280,7 +293,7 @@ Add users to the member table as follows. First instantiate the Bcrypt class, an
 
     :::php     
     <? 
-    $b = new Core\Bcrypt(); 
+    $b = new \Meagr\Bcrypt(); 
     $salt = $b->getSalt();
     $password = $b->hash('123');
 
@@ -300,35 +313,42 @@ Thats half the work done. Now we can check the user is valid from within functio
 
     :::php  
     <?    
-    $member = Meagr\Modules\Models\Member::init()->where('email', $email);
+    $member = Modules\Models\Member::init()->where('email', $email);
+
     //check the user exists first
     if (count($member)) {
+    
         //get the first index in results
         $member = $member[0]; 
+    
         //init the Bcrypt class and set the instance's salt to the members db salt
-        $crypt = new Core\Bcrypt(); 
+        $crypt = new \Meagr\Bcrypt(); 
         $crypt->setSalt($member->salt);
+    
         //now we can check to see if the users password matches our hash with the users salt
         if ($crypt->hash($password) == $member->password) {
+    
             //the password matches, so create the session. 
-            //we can get user data with Core\Auth::current() which returns a Model object of member data
-            Core\Auth::create($member->id);
-            // Core\Router::redirect('/member/dashboard');
+            //we can get user data with \Meagr\Auth::current() which returns a Model object of member data
+            \Meagr\Auth::create($member->id);
+            // \Meagr\Router::redirect('/member/dashboard');
+    
         //if the passwords dont match, force logout 
         } else {
-            Core\Auth::destroy();
-            Core\Router::redirect('/member');
+            \Meagr\Auth::destroy();
+            \Meagr\Router::redirect('/member');
         }
+    
     //the memeber couldnt be found
     } else {
-        throw new Core\MeagrException('User not found');
+        throw new \Meagr\MeagrException('User not found');
     }
 
 Logging a user out of their account / unsetting their session is alot easier: 
 
     :::php  
     <?
-    Meagr\Auth::destroy(); 
+    \Meagr\Auth::destroy(); 
 
 The form Class
 --------------
@@ -382,22 +402,22 @@ You can now add input field data view addFields() or addField(). The later only 
                                         'id' => 'action',
                                         'title' => 'Action', 
                                         'icon' => '',
-                                        'href' => Core\Router::redirect('/admin/login', false)
+                                        'href' => \Meagr\Router::redirect('/admin/login', false)
                                     ), 
                                 'second_action' => array(
                                         'id' => 'second_action',
                                         'title' => 'Second Action', 
-                                        'href' => Core\Router::redirect('/admin/login', false)
+                                        'href' => \Meagr\Router::redirect('/admin/login', false)
                                     ),  
                                 'divider' => true, 
                                 'third_action' => array(
                                         'id' => 'third_action',
                                         'title' => 'third Action', 
-                                        'href' => Core\Router::redirect('/admin/login', false)
+                                        'href' => \Meagr\Router::redirect('/admin/login', false)
                                     ),  
                             )
                     ),
-                'value' => Core\Input::post('email'),     
+                'value' => \Meagr\Input::post('email'),     
             'password' => array(
                 'id' => 'password', 
                 'name' => 'password', 
@@ -518,9 +538,9 @@ Use . to seperate array level
     
     :::php  
     <?
-    p(Core\Arr::get($array, 'one.onetwo'));
-    Core\Arr::set($array, 'one.onetwo', 'init');
-    p(Core\Arr::get($array, 'one.onetwo'));    
+    p(\Meagr\Arr::get($array, 'one.onetwo'));
+    \Meagr\Arr::set($array, 'one.onetwo', 'init');
+    p(\Meagr\Arr::get($array, 'one.onetwo'));    
 
 Amazon AWS S3
 -------------
@@ -529,7 +549,7 @@ Bucket names, keys and secret keys are entered within the Config::s3() array. To
 
     :::php  
     <?
-    $s3 = Core\s3::init(); 
+    $s3 = \Meagr\s3::init(); 
     $s3->createBucket('testing_bucket_name');
 
 To list your buckets, from the details that have been entered into the Config::s3() method
@@ -694,13 +714,13 @@ First example using two strings, or the class and method names:
 
     :::php 
     <?
-    Meagr\Hook::bind('header', array('Home', 'additionalCss'));
+    \Meagr\Hook::bind('header', array('Home', 'additionalCss'));
 
 Second example providing as array containing an instance of an object and a method name: 
 
     :::php 
     <?
-    Meagr\Hook::bind('header', array(new Home, 'additionalCss'));
+    \Meagr\Hook::bind('header', array(new Home, 'additionalCss'));
 
 The hook can then be triggered within your code:
 
@@ -723,28 +743,40 @@ Meagr has an Email class that allows for SMTP mailing with a simple to use wrapp
     <?
     //initialise the class
     \Meagr\Email::init()
+
         //add from address, if not provided, the default from the site / environment config will be used
         ->addFrom('paul@prwhitehead.co.uk', 'Paul Whitehead')
+    
         //add our subject
         ->addSubject('This is the subject of our email') 
+    
         //add an address name => $name, email => $email
         ->addAddress('youraddress@domain.com', 'Paul Whitehead')
+    
         //add a multidimentional array of addresses
         // ->addAddresses($array)
+    
         //add a bcc'd address
         ->addBCC('prwhi@prw.com', 'Paul Whitehead')
+    
         //add a cc's address
         ->addCC('prwhi@prw.com', 'Paul Whitehead')
+    
         //add the header html, if this is not provided, the site config is used
         // ->addHeader('/the/file/path/location/of/the/file.php')
+    
         //add the footer html, if this is not provided, the site config is used
         // ->addFooter('/the/file/path/location/of/the/file.php')
+    
         //add an attachment
         ->addAttachment(PUBLIC_PATH . '/index.php')
+    
         //add the content via a callback class/method (methods must echo content)
         ->addContent(array(__NAMESPACE__ . '\Home', 'email'), array('one' => 'hello', 'two' => 'goodbye'))
+    
         //dont send but output to the screen, remove this to send live emails
         ->debug(true)
+    
         //send and return self
         ->go();
 
@@ -752,7 +784,7 @@ Content can be added through a class method which echo's out content, whcih is t
 
     :::php
     <?
-    namespace Meagr\Modules\Controllers; 
+    namespace Modules\Controllers; 
 
     class Home { 
         public static function email() {
@@ -834,7 +866,6 @@ The FTP class will throw exceptions when it cannot perform an action, so wrap yo
     :::php 
     <? 
     try{
-
         $ftp->mkdir('test');
 
     } catch(MeagrException $e){
@@ -916,6 +947,7 @@ You can pass in any set of key to value pairs for your logging, which is why the
     <?
     //to print our log
     echo \Meagr\Debug::init('log')
+
     //and request only items with a 'success' status, an array of status's can also be passed
     ->output('success');
 
@@ -1006,23 +1038,32 @@ Most of the available options are listed below:
     :::php
     <?
     $t = \Meagr\Image::init()
+
         //open a file to be read
         ->open(PUBLIC_PATH . '/test.jpg')
+    
         //set the cache limit or false
         ->cache(60)
+    
         //set width / height
         ->resize(500, 400)
+    
         //set the width and height as well as the crop coordinates
         ->crop(100, 100, 80, 80)
+    
         //set angle
         ->rotate(180)
+    
         //set flatten to false for gif/png
         ->flatten(false)        
+    
         //set quality
         ->quality(10)
+    
         //override resolution for X and Y - NOT supported in GD Library
         ->resolutionX(100)
         ->resolutionY(100)          
+    
         //write the file, return the saved location
         ->save();
 
@@ -1039,28 +1080,23 @@ To Turn the contents of a directory into a collage, the following can be used:
     }
 
     $t = \Meagr\Image::init()
+    
         //we have to set the name before the rest of the functions run
         ->setSaveFileName(PUBLIC_PATH . '/collage.jpg')
+    
         // cache the image for ever, if this was an int (ie 600) the image would be rebuild after an hour
         ->cache(true)
+    
         //create a new image, passing width / height
         ->create(1140, 150) 
+    
         //add filepaths to be added to the collage and each ones size
         ->collage($array, 95, 75)
+    
         //save to disk
         ->save();
 
         //we can echo our the class and it gives us either the saved image or if 
         //that hasnt been created, the original image back
         echo '<img src="' . $t . '" />';
-
-
-
-
-
-
-
-
-
-
-                 
+          
