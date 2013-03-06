@@ -1,6 +1,5 @@
 <?
 
-
 /**
 * Debug
 * 
@@ -67,12 +66,7 @@ class Debug {
 	*
 	* @return void
 	*/
-	private function __construct($type) { 
-
-		//we need the timer, so make sure its included
-    	if (! class_exists('Timer')) { 
-    		require_once CORE_PATH . '/timer.php';
-    	}		
+	private function __construct($type) { 	
 		
 		//set the type of debug we want to record
 		$this->type = $type;
