@@ -27,17 +27,25 @@ class View {
 		//set the detault
 		$partial_data = false;
 
-		//check for the default mvc location
-		$partial = MODULE_PATH . '/views/partials/' . $partialname . '.php'; 
-		if (! is_file($partial)) {			
+		//get the class that the request is coming from
+		$calling_class = get_called_class(); 
+		
+		//get the class name and swap \ for / as well as controllers for views to check HMVC 
+		$class = strtolower(str_replace('controllers', 'views', str_replace('\\', '/', $calling_class))); 
 
-			//get the class that the request is coming from
-			$calling_class = get_called_class(); 
-			
-			//get the class name and swap \ for / as well as controllers for views to check HMVC 
-			$class = strtolower(str_replace('controllers', 'views', str_replace('\\', '/', $calling_class))); 			
-			$partial = SITE_PATH . '/' . $class . '/partials/' . $partialname . '.php';
-		} 
+		//check for the default mvc location
+		$locations = array(
+				MODULE_PATH . '/views/partials/' . $partialname . '.php',
+				PUBLIC_PATH . '/templates/views/partials/' . $partialname . '.php', 
+				SITE_PATH . '/' . $class . '/partials/' . $partialname . '.php'
+			);
+
+		foreach($locations as $location) {
+			if (is_file($location)) {
+				$partial = $location;
+				break;
+			}
+		}
 
 		//incase we passed in a full file path
 		if (! is_file($partial)) {
@@ -54,13 +62,21 @@ class View {
 			ob_start();
 			require $partial;
 			$partial_data = ob_get_clean();
+
+
+			Debug::init('log')->add(array('message' => 'Including partial: ' . $partial,
+											'class' => __METHOD__, 
+											'status' => 'success', 
+											'backtrace' => Debug::backtrace()));					
+			return $partial_data; 
 		} 
 
-		Debug::init('log')->add(array('message' => 'Including partial: ' . $partial,
+		Debug::init('log')->add(array('message' => 'Failted to including partial: ' . $partial,
 										'class' => __METHOD__, 
-										'status' => 'success', 
-										'backtrace' => Debug::backtrace()));					
-		return $partial_data; 
+										'status' => 'error', 
+										'backtrace' => Debug::backtrace()));
+		// echo 'couldnt include';
+		return false;									
 	}
 
 	/**
