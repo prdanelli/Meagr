@@ -300,6 +300,10 @@ class cache {
 		//loop our file array
 		foreach($files as $file) {
 
+			if (! is_file($file)) {
+				continue;
+			}
+
 			//check the modified time of each file against our cache file
 			if (filemtime($file) > $check_file) {
 				return true;
