@@ -227,6 +227,10 @@ class Response {
     */
     function cache($duration = null) {
 
+        if ($duration === false) {
+            return $this;
+        }        
+
         //if no value was passed into the function
         if (is_null($duration)) {
 
