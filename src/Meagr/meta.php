@@ -117,6 +117,10 @@ class Meta {
 
 	public function __call($name, $arguments) {
 
+		if (isset($this->meta[$name])) {
+			return $this->meta[$name];
+		}
+
 		if (isset($this->config[$name])) {
 			return $this->config[$name];
 		}
