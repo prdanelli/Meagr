@@ -1099,4 +1099,23 @@ To Turn the contents of a directory into a collage, the following can be used:
         //we can echo our the class and it gives us either the saved image or if 
         //that hasnt been created, the original image back
         echo '<img src="' . $t . '" />';
-          
+  
+
+Meta
+----
+
+To add meta data to your view, you can use the following: 
+
+    :::php
+    <?
+    \Meagr\Meta::init()->set('title', 'Articles and tutorials');
+
+The first param is the index you want to set and the second is the value. These can then be accessed by: 
+
+    :::php 
+    <?
+    echo \Meagr\Meta::init()->title();    
+
+Here the method title() is the first param when it was used in the set() method. 
+
+
