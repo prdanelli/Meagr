@@ -9,7 +9,7 @@ function __($string, $default = null) {
 if (! function_exists('p')) {
 	function p() {
 		foreach(func_get_args() as $array) {
-			echo '<pre>';
+			echo '<pre style="font-size: .8em; line-height: 1.3em; letter-spacing: 0px; font-family: monaco, arial, sans-serif;">';
 			print_r($array);
 			echo '</pre>';
 		}
@@ -18,7 +18,7 @@ if (! function_exists('p')) {
 
 function pd() {
 	foreach(func_get_args() as $array) {
-		echo '<pre>';
+		echo '<pre style="font-size: .8em; line-height: 1.3em; letter-spacing: 0px; font-family: monaco, arial, sans-serif;">';
 		print_r($array);
 		echo '</pre>';
 	}
@@ -28,7 +28,7 @@ function pd() {
 
 function v() {
 	foreach(func_get_args() as $array) {
-		echo '<pre>';
+		echo '<pre style="font-size: .8em; line-height: 1.3em; letter-spacing: 0px; font-family: monaco, arial, sans-serif;">';
 		var_dump($array);
 		echo '</pre>';
 	}
@@ -36,7 +36,7 @@ function v() {
 
 function vd() {
 	foreach(func_get_args() as $array) {
-		echo '<pre>';
+		echo '<pre style="font-size: .8em; line-height: 1.3em; letter-spacing: 0px; font-family: monaco, arial, sans-serif;">';
 		var_dump($array);
 		echo '</pre>';
 	}
