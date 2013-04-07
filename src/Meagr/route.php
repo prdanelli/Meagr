@@ -136,4 +136,15 @@ class Route {
 		$this->uri_mapped = $uri_mapped;
 		return $this;
 	}
+
+
+	/**
+	* check if a mapped pattern exists in the current setup 
+	*
+	* @return bool
+	*/
+	public function patternExists() {
+		$segments = explode('::', $this->pattern_mapped); 
+		return method_exists($segments[0], $segments[1]); 
+	}
 }

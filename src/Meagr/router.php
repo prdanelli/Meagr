@@ -269,19 +269,21 @@ class Router {
                 continue;
             }
 
-            //if we have a matching route
-            if (rtrim($route->getMappedUri(), '/') == rtrim($this->uri, '/')) {
+            //if we have a matching route which matches an available class
+            if (rtrim($route->getMappedUri(), '/') == rtrim($this->uri, '/') and $route->patternExists()) {
 
                 //store it
                 $this->matched_routes[] = $route; 
+                continue;
             }
 
             //check that our args arnt preventing a match
             $args = $this->route_map['{args}']; 
-            if (str_replace($args . '/', '', $route->getMappedUri()) == str_replace($args . '/', '', $this->uri)) {
+            if (str_replace($args . '/', '', $route->getMappedUri()) == str_replace($args . '/', '', $this->uri) and $route->patternExists()) {
             
                  //store it
-                $this->matched_routes[] = $route;                
+                $this->matched_routes[] = $route;      
+                continue;          
             }
         }
 

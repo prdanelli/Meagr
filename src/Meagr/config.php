@@ -65,7 +65,10 @@ class Config {
 				'{modules}' => 'modules',
 				'{controllers}' => 'controllers', 
 				'{subdomain}' => trim(SITE_SUBDOMAIN, '\\'), 
-				'{domain}' => SITE_DOMAIN
+				'{domain}' => SITE_DOMAIN, 
+
+				//everything that is passed after the domain is a possible argument
+				'{args}' => trim(\Meagr\Input::server('REQUEST_URI'), '/'),
 			);
 	}
 
@@ -100,6 +103,9 @@ class Config {
 
 				//sub.controller
 				array('{subdomain}.{domain}/{class}/{method}/' => '\{modules}\{subdomain}\{class}\{controllers}\{class}::{method}'),
+
+				//catch all for pages so: http://prwhitehead.co.uk/photography => \Modules\Controllers\Page::GET_photography
+				array('{domain}/{args}' => '\{modules}\{controllers}\Page::{args}'), 				
 			);
 	}
 
