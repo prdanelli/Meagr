@@ -67,7 +67,7 @@ class Router {
     */
     private function __construct() {
         //get the current uri
-        $this->uri_segments = Uri::segments();
+        $this->uri_segments = $this->arguments = Uri::segments();
 
         //get the current uri
         $this->uri = Uri::full();           
@@ -79,46 +79,6 @@ class Router {
 
         //add any additional routes, adding them to the route map
         $this->additionalRouteMaps();       
-    }
-
-
-    /**
-    * internal function to translate the tags from the config route map adding additional items
-    *
-    * @return void
-    */
-    function additionalRouteMaps() {
-        $array = array();
-
-        //check if we have anything to work with
-        if (empty($this->uri_segments)) {
-            return false;
-        }
-
-        //are we at the root level (home page)
-        if ($this->uri_segments[0] == '/') {
-            $this->is_root = true;
-        }
-
-        $array['{class}'] = $this->uri_segments[0];
-        $array['{module}'] = $this->uri_segments[0];
-        $array['{subclass}'] = $this->uri_segments[0] . '_' . $this->uri_segments[1];
-        $array['{method}'] = $this->uri_segments[1];
-        $array['{submethod}'] = $this->uri_segments[2];
-        $array['{args}'] = '';
-
-        unset($this->uri_segments[1], $this->uri_segments[0]);
-
-        //check if we have additional arguments
-        if (! empty($this->uri_segments)) { 
-            $array['{args}'] = implode('/', $this->uri_segments);
-
-            //keep them for passing to the func call later
-            $this->arguments = $this->uri_segments;
-        }            
-
-        //combine our array with the existing route map
-        $this->route_map = $this->route_map + $array;
     }
 
 
@@ -138,12 +98,10 @@ class Router {
         }
 
         //loop though our routes and add them new route instances
-        foreach($routes as $route) { 
-            $keys = array_keys($route); 
-            $values = array_values($route);
+        foreach($routes as $route) {
 
             //create our new Route instance and store
-            $this->addRoute(new Route($keys[0], $values[0]));
+            $this->addRoute(new Route($route['uri'], $route['pattern'], $route['filter']));
         }    
 
         return $this;   
@@ -158,17 +116,7 @@ class Router {
     public function addRoute(Route $route) {
         $this->routes[] = $route;
         return $this;
-    }
-
-
-    /**
-    * return our routes
-    *
-    * @return array
-    */  
-    public function getRoutes() {
-        return $this->routes;
-    }     
+    }   
 
 
     /**
@@ -215,11 +163,8 @@ class Router {
             //look for any matches within our uri
             if (stripos($uri, $key) !== false and $object->is_special === false) {
 
-                //if value is empty, add a slash to key to be removed
-                $tmp_key = ($value ? $key : $key . '/'); 
-
-                //make our uri
-                $uri = str_ireplace($tmp_key, $value, $uri);
+                //make our uri - if value is empty, add a slash to key to be removed
+                $uri = str_ireplace(($value ? $key : $key . '/'), $value, $uri);
             }  
 
              //look for any matches within our pattern
@@ -246,6 +191,9 @@ class Router {
         //update the mapped pattern, keeping the original pattern
         $object->setMappedPattern($pattern);
         $object->setMappedUri($uri);
+
+        //now we have everything in place, run any closures passed from the config
+        $object->filter(Uri::segments());
     }  
 
 
@@ -360,6 +308,56 @@ class Router {
 
         return $this;
     }
+
+
+    /**
+    * internal function to translate the tags from the config route map adding additional items
+    *
+    * @return void
+    */
+    function additionalRouteMaps() {
+        $array = array();
+
+        //check if we have anything to work with
+        if (empty($this->uri_segments)) {
+            return false;
+        }
+
+        //are we at the root level (home page)
+        if ($this->uri_segments[0] == '/') {
+            $this->is_root = true;
+        }
+
+        $array['{class}'] = $this->uri_segments[0];
+        $array['{module}'] = $this->uri_segments[0];
+        $array['{subclass}'] = $this->uri_segments[0] . '_' . $this->uri_segments[1];
+        $array['{method}'] = $this->uri_segments[1];
+        $array['{submethod}'] = $this->uri_segments[2];
+        $array['{args}'] = '';
+
+        unset($this->uri_segments[1], $this->uri_segments[0]);
+
+        //check if we have additional arguments
+        if (! empty($this->uri_segments)) { 
+            $array['{args}'] = implode('/', $this->uri_segments);
+
+            //keep them for passing to the func call later
+            $this->arguments = $this->uri_segments;
+        }            
+
+        //combine our array with the existing route map
+        $this->route_map = $this->route_map + $array;
+    }
+
+
+    /**
+    * return our routes
+    *
+    * @return array
+    */  
+    public function getRoutes() {
+        return $this->routes;
+    }     
 
 
     /**

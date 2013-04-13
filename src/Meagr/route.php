@@ -26,6 +26,9 @@ class Route {
 	//our translated uri
 	public $uri_mapped;
 
+	//our closure to manipulate the route further
+	public $filter;
+
 	//whether this route is a system route
 	public $is_special = false;
 
@@ -36,12 +39,14 @@ class Route {
 	*
 	* @param uri string The URI of the route
 	* @param pattern string The internal class/method pattern of the route
+	* @param filter closure	The closure function to manipulate additional routes
 	*
 	* @return void
 	*/
-	public function __construct($uri, $pattern) {
+	public function __construct($uri, $pattern, $filter = null) {
 		$this->uri = $uri;
 		$this->pattern = $pattern; 	
+		$this->filter = $filter;
 	}
 
 	/* === getters and setters === */
@@ -123,6 +128,22 @@ class Route {
 	public function getMappedUri() {
 		return $this->uri_mapped;
 	}	
+	
+
+	/**
+	* run a function on the closure
+	*
+	* @return mixed
+	*/
+	public function filter($args = null) {
+		$filter = $this->filter; 
+
+		if (! is_callable($filter)) {
+			return false;
+		}
+
+		return $filter($this, $args);
+	}
 
 
 	/**
@@ -147,4 +168,6 @@ class Route {
 		$segments = explode('::', $this->pattern_mapped); 
 		return method_exists($segments[0], $segments[1]); 
 	}
+
+
 }

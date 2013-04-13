@@ -13,6 +13,86 @@ namespace Meagr;
 
 class Config {
 
+
+	/**
+	* Routing defaults 
+	*
+	* app: Admin
+	* class: Admin
+	* method: user()
+	* args: /my/extra/args
+	* domain: meagr.com
+	* subdomain: member.
+	* 
+	* @return array
+	*/
+	public static function routes() {
+		return array(
+
+				// //default system routes
+				array(
+					'uri' => '__HOME__', 
+					'pattern' => '\Meagr\Controller::GET_index'
+				),
+				array(
+					'uri' => '__404__', 
+					'pattern' => '\Meagr\Controller::GET_404'
+				), 
+				//mvc
+				array(
+					'uri' => '{domain}/{class}/{method}/', 
+					'pattern' => '\{modules}\{controllers}\{class}::{method}'
+				), 
+				//hmvc
+				array(
+					'uri' => '{domain}/{class}/{method}/', 
+					'pattern' => '\{modules}\{class}\{controllers}\{class}::{method}'
+				),
+				//Sub_Controller::Method()
+				array(
+					'uri' => '{domain}/{class}/{method}/', 
+					'pattern' => '\{modules}\{class}\{controllers}\{subclass}::{submethod}'
+				),
+				//sub.controller
+				array(
+					'uri' => '{subdomain}.{domain}/{class}/{method}/', 
+					'pattern' => '\{modules}\{subdomain}\{class}\{controllers}\{class}::{method}'
+				),
+				//catch all for pages so: http://prwhitehead.co.uk/photography => \Modules\Controllers\Page::GET_photography
+				array(
+					'uri' => '{domain}/{args}', 
+					'pattern' => '\{modules}\{controllers}\Page::{args}', 
+					'filter' => function($object, $args = null) {
+
+						//if we have no args, just return as we dont need to do anything
+						if (! is_array($args) or empty($args)) {
+							return $object; 
+						}
+
+						//if we have arguments, get the first
+						$page = $args[0]; 
+
+						//create the string
+						$args_string = implode('/', $args);
+
+						//unset the first
+						unset($args[0]);
+
+						//reorder the remaining
+						sort($args);
+
+						//set the new pattern, minus the argument string, instead use the first argument
+						$object->setMappedPattern(str_replace($args_string, $page, $object->pattern_mapped));
+
+						//return
+						return $object; 
+					}
+				), 				
+			);
+	}
+
+
+
 	/**
 	* The system language defaults 
 	*
@@ -73,41 +153,7 @@ class Config {
 	}
 
 
-	/**
-	* Routing defaults 
-	*
-	* app: Admin
-	* class: Admin
-	* method: user()
-	* args: /my/extra/args
-	* domain: meagr.com
-	* subdomain: member.
-	* 
-	* @return array
-	*/
-	public static function routes() {
-		return array(
 
-				// //default system routes
-				array('__HOME__' => '\Meagr\Controller::GET_index'),
-				array('__404__' => '\Meagr\Controller::GET_404'), 
-
-				//mvc
-				array('{domain}/{class}/{method}/' => '\{modules}\{controllers}\{class}::{method}'), 
-
-				//hmvc
-				array('{domain}/{class}/{method}/' => '\{modules}\{class}\{controllers}\{class}::{method}'),
-
-				//Sub_Controller::Method()
-				array('{domain}/{class}/{method}/' => '\{modules}\{class}\{controllers}\{subclass}::{submethod}'),
-
-				//sub.controller
-				array('{subdomain}.{domain}/{class}/{method}/' => '\{modules}\{subdomain}\{class}\{controllers}\{class}::{method}'),
-
-				//catch all for pages so: http://prwhitehead.co.uk/photography => \Modules\Controllers\Page::GET_photography
-				array('{domain}/{args}' => '\{modules}\{controllers}\Page::{args}'), 				
-			);
-	}
 
 
 	/**
