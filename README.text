@@ -29,94 +29,85 @@ This namespace matches the folder name and structure of your controllers/models/
 
 Sub controllers can also be used by using the underscore in the filename. 
 
-    :::php  
-    /admin/user/create
 
-Would first look to find an Admin controller class, which contained a GET_user method and pass in 'create' as a variable. The next check would look to find the Admin_User controller which is in admin_user.php within the admin app folder
+Route Config
+------------
 
-    :::php  
-    /modules/admin/controllers/admin_user.php
-
-For the method:
-
-    :::php  
-    Admin_User::GET_create();
-
-Routing
--------
-
-By default a website can use either an MVC or HMVC structure, which uses:
+The Meagr package comes with a set of default routes which are implimented at runtime.
 
     :::php 
-    http://www.example.com/news/latest
-
-Which would route to either: 
-
-    :::php 
-    modules/news/controllers/news.php
-
-or: 
-
-    :::php 
-    modules/controllers/news.php
-
-The HMVC structure takes presidence and over MVC which is the default. 
-
-If we were using the HMVC structure for our app modules, the system will look for the following class and method
-
-    :::php 
-    <?  
-    Modules\News\Controllers\News::GET_latest();
-
-If there is an even number of arguments the system will attempt to assign them to key => value pairs. So a URL as follows: 
-
-    :::php  
-    <your domain>/admin/user/add/this/that/and/again/hi
-
-Should be parsed into an array as such after the method Admin_User::GET_add() has been found: 
-
-    :::php  
     <?
-    Array
-    (
-        [add] => this
-        [that] => and
-        [again] => hi
-    )
+        //default system routes
+        array(
+            'uri' => '__HOME__', 
+            'pattern' => '\Meagr\Controller::GET_index'
+        ),
 
-The original URI segments are always passed as an array called $segments and if the segment count is even, then $pairs will hold the parsed key => value pairs. So the following URI: 
+        //special 404 route
+        array(
+            'uri' => '__404__', 
+            'pattern' => '\Meagr\Controller::GET_404'
+        ), 
 
-    :::php  
-    <your domain>/admin/user/something/else/that/is/passed/as/segments/again/
+        //mvc
+        array(
+            'uri' => '{domain}/{class}/{method}/', 
+            'pattern' => '\{modules}\{controllers}\{class}::{method}'
+        ), 
 
-Would translate to accessing Admin_user class and if no GET_something() method could be found, the system will check for a default controller (usually GET_index()) and then pass the following array to the method, if found: 
+        //hmvc
+        array(
+            'uri' => '{domain}/{class}/{method}/', 
+            'pattern' => '\{modules}\{class}\{controllers}\{class}::{method}'
+        ),
 
-    :::php  
-    <?
-    Array
-    (
-        [segments] => Array
-            (
-                [0] => admin
-                [1] => user
-                [2] => something
-                [3] => else
-                [4] => that
-                [5] => is
-                [6] => passed
-                [7] => as
-                [8] => segments
-                [9] => again
-            )
+        //Sub_Controller::Method()
+        array(
+            'uri' => '{domain}/{class}/{method}/', 
+            'pattern' => '\{modules}\{class}\{controllers}\{subclass}::{submethod}'
+        ),
 
-        [pairs] => Array
-            (
-                [something] => else
-                [that] => is
-                [passed] => as
-                [segments] => again
-            )
-    )
+        //sub.controller
+        array(
+            'uri' => '{subdomain}.{domain}/{class}/{method}/', 
+            'pattern' => '\{modules}\{subdomain}\{class}\{controllers}\{class}::{method}'
+        ),
+
+        //catch all for pages so: <domain>/photography => \Modules\Controllers\Page::GET_photography
+        array(
+            'uri' => '{domain}/{args}', 
+            'pattern' => '\{modules}\{controllers}\Page::{args}', 
+            'filter' => function($object, $args = null) {
+
+                //code is here
+            }
+        ),              
+
+In the last entry for the Page class, the closure does the work, which takes the arguments and passes them to the intended method. However, because we dont know which number of arguments is being used for either method or argument so we pass to pass the class as the first method and the arguments after. Given the config above, which is setup to use the Page class, the following url "/article/title" would access the Page class an then look for a page method using the first argument, which is article:
+
+
+
+    :::php
+    <? 
+    class Page {
+        public static function GET_article($method, $item = '') {
+            //code
+        }    
+    }
+
+The second argument which then be passed to the method and automatically assigned to the variable $title. But the method must be the first argument. We could of course: 
+
+    :::php
+    <? 
+    class Page {
+        public static function GET_article() {
+            $args = func_get_args();
+            $title = $args[1];
+
+            //code
+        }    
+    }
+
 
 Using views
 -----------
