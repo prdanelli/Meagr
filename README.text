@@ -68,6 +68,13 @@ The Meagr package comes with a set of default routes which are implimented at ru
         ),
 
         //sub.controller
+        //requires a that a controller of the name of the subdomain is found within the modules folder
+        // so
+        // admin.domain.co.uk 
+        // would map to the following namespaced class and method
+        // \Modules\Admin\Admin\Controllers\Admin::GET_index()
+        // which would look in the following folder
+        // modules/admin/admin/controllers/admin.php
         array(
             'uri' => '{subdomain}.{domain}/{class}/{method}/', 
             'pattern' => '\{modules}\{subdomain}\{class}\{controllers}\{class}::{method}'
