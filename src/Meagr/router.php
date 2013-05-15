@@ -70,15 +70,15 @@ class Router {
         $this->uri_segments = $this->arguments = Uri::segments();
 
         //get the current uri
-        $this->uri = Uri::full();           
+        $this->uri = rtrim(Uri::full(), '/');
 
-        $this->request_type = Input::server('request_method');
+        $this->request_type = Input::server('request_method');      
 
         //get the route map from the config
         $this->route_map = Config::settings('routeMap');
 
         //add any additional routes, adding them to the route map
-        $this->additionalRouteMaps();       
+        $this->routeMap(); 
     }
 
 
@@ -125,22 +125,29 @@ class Router {
     * @return object
     */  
     function mapRoutes() {
-        array_map(array($this, 'translateRoute'), $this->getRoutes());     
+
+        //run the method on all routes currently registered
+        array_map(array($this, 'translatePattern'), $this->getRoutes()); 
+        array_map(array($this, 'translateUri'), $this->getRoutes()); 
+
+        //run through the objects for filter functions 
+        array_map(array($this, 'filterRoute'), $this->getRoutes());  
+
         return $this;    
     }
 
 
     /**
-    * map individual routes
+    * map individual route Uri's
     *
     * @return mixed[object|void]
     */     
-    function translateRoute(Route $object) {
+    function translateUri(Route $object) {
 
         //empty and move on
         if (empty($object)) {
             return $object;
-        }     
+        }
 
         //check for our special terms __HOME__, __404__ etc
         // the / states the start and end of the pattern
@@ -154,11 +161,10 @@ class Router {
             $object->is_special = true;
         }  
 
-        $pattern = $object->getPattern();
         $uri = $object->getUri();
 
         //loop through our route map array and switch values in both uri and pattern strings
-        foreach($this->route_map as $key => $value) { 
+        foreach($this->getRouteMap() as $key => $value) { 
 
             //look for any matches within our uri
             if (stripos($uri, $key) !== false and $object->is_special === false) {
@@ -189,13 +195,79 @@ class Router {
         }
 
         //update the mapped pattern, keeping the original pattern
-        $object->setMappedPattern($pattern);
         $object->setMappedUri($uri);
 
-        //now we have everything in place, run any closures passed from the config
-        $object->filter(Uri::segments());
+        return $object;
     }  
 
+    /**
+    * map individual route patterns
+    *
+    * @return mixed[object|void]
+    */     
+    function translatePattern(Route $object) {
+
+        //empty and move on
+        if (empty($object)) {
+            return $object;
+        }
+
+        $pattern = $object->getPattern();
+
+        //loop through our route map array and switch values in both uri and pattern strings
+        foreach($this->getrouteMap() as $key => $value) { 
+
+             //look for any matches within our pattern
+            if (stripos($pattern, $key) !== false) { 
+                
+                //if we have a key called '{method}' and its empty, we're at the root level, so add 'index'
+                $value = (in_array($key, array('{method}', '{submethod}')) and $value == '') ? 'index' : $value;
+
+                //update our pattern variable
+                $pattern = str_ireplace($key, $value, $pattern);
+            }  
+        }
+
+        //prepend the request type to the method, if we have a normal route
+        if (strpos($pattern, '::') and $object->is_special === false) {
+
+            //explode $pattern into $class and $method
+            list($class, $method) = explode('::', $pattern); 
+
+            //put back together - and check we dont add the request type to the method twice
+            $pattern = $class . '::' . (! strstr($method, $this->request_type) ? $this->request_type . '_' : '') . $method;
+        }
+
+        //update the mapped pattern, keeping the original pattern
+        $object->setMappedPattern($pattern);
+
+        return $object;
+    }      
+
+
+    /**
+    * map individual routes
+    *
+    * @return mixed[object|void]
+    */     
+    function filterRoute(Route $object) {
+
+        //now we have everything in place, run any closures passed from the config
+        $object = $object->filter(Uri::segments(), null); 
+        return $object;  
+    } 
+
+
+    /**
+    * check if a mapped pattern exists in the current setup 
+    *
+    * @return bool
+    */
+    public function patternExists(Route $route) {
+        $route = self::namespaceRoutePattern($route);
+        $segments = explode('::', $route->getMappedPattern()); 
+        return method_exists($segments[0], $segments[1]); 
+    }
 
     /**
     * loop our routes and see if we have a match
@@ -210,7 +282,7 @@ class Router {
         }
 
         //loop our routes
-        foreach($this->routes as $route) {
+        foreach($this->routes as $route) { 
 
             //if we have a special route, move on
             if (is_null($route->getMappedUri())) {
@@ -218,7 +290,9 @@ class Router {
             }
 
             //if we have a matching route which matches an available class
-            if (rtrim($route->getMappedUri(), '/') == rtrim($this->uri, '/') and $route->patternExists()) {
+            if (rtrim($route->getMappedUri(), '/') == $this->uri and $this->patternExists($route)) { 
+
+                $route->route_exists = true;
 
                 //store it
                 $this->matched_routes[] = $route; 
@@ -227,8 +301,10 @@ class Router {
 
             //check that our args arnt preventing a match
             $args = $this->route_map['{args}']; 
-            if (str_replace($args . '/', '', $route->getMappedUri()) == str_replace($args . '/', '', $this->uri) and $route->patternExists()) {
+            if (str_replace($args . '/', '', $route->getMappedUri()) == str_replace($args . '/', '', $this->uri) and $this->patternExists($route)) {
             
+                $route->route_exists = true;
+
                  //store it
                 $this->matched_routes[] = $route;      
                 continue;          
@@ -260,7 +336,7 @@ class Router {
             $this->route = $this->getSpecialRoute('__HOME__');
 
             //make sure the string is a valid, capitalised Meagr namespace
-            self::namespaceRoutePattern($this->route);
+            $this->route = self::namespaceRoutePattern($this->route);
 
             //make sure the 404 flag is unset
             $this->is_404 = false;
@@ -283,7 +359,7 @@ class Router {
         //check through our matched routes array 
         foreach($this->matched_routes as $route) {
 
-            self::namespaceRoutePattern($route);
+            $route = self::namespaceRoutePattern($route);
 
             //get our class pattern by seperating the string at the '::'
             list($class, $method) = explode('::', $route->pattern_mapped); 
@@ -315,38 +391,62 @@ class Router {
     *
     * @return void
     */
-    function additionalRouteMaps() {
-        $array = array();
+    function routeMap() {
+        $map_segments = array();
 
         //check if we have anything to work with
         if (empty($this->uri_segments)) {
             return false;
         }
 
+        //define our segments
+        $map_segments['{modules}'] = 'modules';
+        $map_segments['{controllers}'] = 'controllers';
+        $map_segments['{domain}'] = SITE_DOMAIN;
+        $map_segments['{class}'] = $this->uri_segments[0];
+        $map_segments['{module}'] = $this->uri_segments[0];
+        $map_segments['{subclass}'] = $this->uri_segments[0] . '_' . $this->uri_segments[1];
+        $map_segments['{method}'] = $this->uri_segments[1];
+        $map_segments['{submethod}'] = $this->uri_segments[2];
+
+        //check for a subdomain
+        $url = parse_url('http://' . \Meagr\Input::server('http_host'));
+        $url['host'] = explode('.', $url['host']); 
+
+        //if the first host segment is not www 
+        if ($url['host'][0] !== 'www' and ! stripos(SITE_URL, $url['host'][0])) {
+
+            //set the sites subdomain 
+            $map_segments['{subdomain}'] = $url['host'][0];
+
+            //define for other site wide usage
+            define('SITE_SUBDOMAIN', $url['host'][0]);
+
+            //ammend our other map segments
+            $map_segments['{modules}'] .= '/' . $map_segments['{subdomain}'];
+        } 
+
         //are we at the root level (home page)
-        if ($this->uri_segments[0] == '/') {
+        if ($this->uri_segments[0] == '/' and ! defined('SITE_SUBDOMAIN')) {
             $this->is_root = true;
-        }
+            $this->uri_segments[0] = '';
+        }     
 
-        $array['{class}'] = $this->uri_segments[0];
-        $array['{module}'] = $this->uri_segments[0];
-        $array['{subclass}'] = $this->uri_segments[0] . '_' . $this->uri_segments[1];
-        $array['{method}'] = $this->uri_segments[1];
-        $array['{submethod}'] = $this->uri_segments[2];
-        $array['{args}'] = '';
-
+        //clear the segments we have already used
         unset($this->uri_segments[1], $this->uri_segments[0]);
 
         //check if we have additional arguments
         if (! empty($this->uri_segments)) { 
-            $array['{args}'] = implode('/', $this->uri_segments);
+            $map_segments['{args}'] = implode('/', $this->uri_segments);
 
             //keep them for passing to the func call later
             $this->arguments = $this->uri_segments;
         }            
 
         //combine our array with the existing route map
-        $this->route_map = $this->route_map + $array;
+        $this->route_map = $this->route_map + $map_segments;
+
+        return;
     }
 
 
@@ -375,11 +475,24 @@ class Router {
         //make sure our namespace is capitalised properly
         if (strpos($class, '\\') !== false) { 
 
+            //clean up any remaining / and replace with \
+            $class = '\\' . str_replace('/', '\\', $class);
+
             //explode array and filter empty slots
-            $array = array_filter(explode('\\', $class)); 
+            $sections = array_filter(explode('\\', $class)); 
+
+            //reset our new array
+            $array = array();
 
             //capitalise each work
-            foreach($array as $key => $section) {
+            foreach($sections as $key => $section) {
+
+                //if we have a / skip this one
+                if (trim($section) == '/')  {
+                    continue;
+                }
+
+                //add to our new array
                 $array[$key] = ucwords($section);
             }
 
@@ -387,8 +500,10 @@ class Router {
             $class = implode('\\', $array); 
 
             //update our mapped route
-            $route->pattern_mapped = $class . '::' . $method;
-        } 
+            $route->setMappedPattern($class . '::' . $method);
+        }
+
+        return $route;
     }
 
 
@@ -438,6 +553,33 @@ class Router {
         return $this->matched_routes;
     }
 
+
+    /**
+    * returns the value of the objects route_map key
+    *
+    * @param key string The key of the route map array
+    * 
+    * @return mixed[string|array]
+    */
+    function getRouteMap($key = null) {
+        if (is_null($key)) {
+            return $this->route_map;
+        }
+
+        return $this->route_map[$key];
+    }       
+
+
+    /**
+    * set the value of the objects route_map key
+    *
+    * @param key string The key of the route map array
+    * 
+    * @return mixed[string|array]
+    */
+    function setRouteMap($key, $value = '') {
+        return $this->route_map[$key] = $value;
+    }  
     
     /**
     * misc redirect function

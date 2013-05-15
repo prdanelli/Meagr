@@ -15,6 +15,18 @@ class Config {
 
 
 	/**
+	* Routing route map defaults 
+	*
+	* @return array
+	*/
+	public static function routeMap() {
+		return array(
+				// '{custom_map_section}' => 'my_url_segment'
+			);
+	}
+
+
+	/**
 	* Routing defaults 
 	*
 	* app: Admin
@@ -53,10 +65,45 @@ class Config {
 					'uri' => '{domain}/{class}/{method}/', 
 					'pattern' => '\{modules}\{class}\{controllers}\{subclass}::{submethod}'
 				),
-				//sub.controller
+				//sub.domain.com
+				//to use the subcontroller you must have a controller within the subdomain folder
+				// by the same name and a method of that name inside the controllers folder
+				// so http://admin.yourdomain.com => \modules\admin\admin\controllers\admin::GET_index
+				// this is a fallback for when no class method is found
 				array(
 					'uri' => '{subdomain}.{domain}/{class}/{method}/', 
-					'pattern' => '\{modules}\{subdomain}\{class}\{controllers}\{class}::{method}'
+					'pattern' => '\{modules}\{subdomain}\{class}\{controllers}\{class}::{method}', 
+					'filter' => function($object, $args = null){ 
+
+				        // instantiate our router singleton
+						$router = Router::init(); 
+						
+						//check if there is a {class} value set
+				        if ($object->routeMapKeyExists('{class}') === false or $router->getRouteMap('{class}') == '/') {
+
+				        	//get the subdomain thats been set in the url and the config
+				        	$subdomain = $router->getRouteMap('{subdomain}'); 
+
+				        	//if not, set it to the subdomain
+				        	$router->setRouteMap('{class}', $subdomain);	
+
+				        	//lets not double up
+				        	$router->setRouteMap('{subdomain}', '');	
+
+				        	//make the pattern namespace compatible
+				        	$object = Router::namespaceRoutePattern($object);
+
+				        	//update the pattern
+					        $object = $router->translatePattern($object);
+					        
+					        //set the class back to empty
+				        	$router->setRouteMap('{class}', '');				        	
+				        	$object->uri_mapped = rtrim($object->uri_mapped, '/');
+				        }
+
+						//return our object
+						return $object;						
+					}
 				),
 				//catch all for pages so: http://prwhitehead.co.uk/photography => \Modules\Controllers\Page::GET_photography
 				array(
@@ -133,27 +180,6 @@ class Config {
 				'keywords' => 'meagr, php, framework, one love, open source'
 			);
 	}
-
-
-	/**
-	* Routing route map defaults 
-	*
-	* @return array
-	*/
-	public static function routeMap() {
-		return array(
-				'{modules}' => 'modules',
-				'{controllers}' => 'controllers', 
-				'{subdomain}' => trim(SITE_SUBDOMAIN, '\\'), 
-				'{domain}' => SITE_DOMAIN, 
-
-				//everything that is passed after the domain is a possible argument
-				'{args}' => trim(\Meagr\Input::server('REQUEST_URI'), '/'),
-			);
-	}
-
-
-
 
 
 	/**

@@ -32,6 +32,9 @@ class Route {
 	//whether this route is a system route
 	public $is_special = false;
 
+	//does this route object exist
+	public $route_exists = false;
+
 
 	/**
 	* instantiate and pass our route array which should look like this: 
@@ -160,14 +163,17 @@ class Route {
 
 
 	/**
-	* check if a mapped pattern exists in the current setup 
+	* returns the value of the objects route_map key
 	*
-	* @return bool
+	* @param key string The key of the route map array
+	* 
+	* @return mixed[string|array]
 	*/
-	public function patternExists() {
-		$segments = explode('::', $this->pattern_mapped); 
-		return method_exists($segments[0], $segments[1]); 
-	}
+	public function routeMapKeyExists($key) { 
+		//get our singleton object
+		$router = Router::init();
+		return (trim($router->getRouteMap($key)) !== '' ? true : false);
+	}		
 
 
 }

@@ -688,8 +688,27 @@ class Form {
 	 * @return object
 	 */
 	private function inputTextarea() {	
+
+		//check if we have been passed a closure
+		if (is_callable($this->input['value'])) {
+			$this->input['value'] = $this->input['value']();
+		}
+
+		$this->structureControlGroupOpen();
+		$this->textLabelOpen();
+		$this->textLabelClose();
+		$this->structureControlOpen();				
+		$this->structureAddon('prepend');
+
 		$this->form_build[] =  '<textarea ' . $this->attrKeyValue($this->input, array('value', 'help', 'label', 'type')) . '>' . $this->input['value'] . '</textarea>';
-		return $this;
+
+		$this->structureAddon('append');
+		$this->structureControlClose();
+		//put the help outside the control incase of errors (which wont show otherwise)
+		$this->textHelp();
+		$this->structureControlGroupClose();	
+		
+		return $this;	
 	}	
 
 
