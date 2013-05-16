@@ -116,6 +116,9 @@ class Config {
 							return $object; 
 						}
 
+				        // instantiate our router singleton
+						$router = Router::init(); 						
+
 						//if we have arguments, get the first
 						$page = $args[0]; 
 
@@ -127,9 +130,28 @@ class Config {
 
 						//reorder the remaining
 						sort($args);
+			        
+			        	//set the router route map arg to be our page
+			        	$router->setRouteMap('{args}', $page);	
+
+			        	//translate the pattern
+				        $object = $router->translatePattern($object);
+			        	
+			        	//namespace the pattern
+			        	$object = Router::namespaceRoutePattern($object);
+
+						//trim the uri			        	
+			        	$object->uri_mapped = rtrim($object->uri_mapped, '/');
+
+			        	//put the args back on the url for matching
+			        	$router->setRouteMap('{args}', $args_string);	
+
+			        	//...and translate
+				        $object = $router->translateUri($object);
 
 						//set the new pattern, minus the argument string, instead use the first argument
-						$object->setMappedPattern(str_replace($args_string, $page, $object->pattern_mapped));
+						$object->setMappedPattern(str_replace($args_string, $page, $object->getMappedPattern()));
+						$object->setMappedUri($object->uri_mapped);
 
 						//return
 						return $object; 

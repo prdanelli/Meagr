@@ -98,7 +98,7 @@ class Router {
         }
 
         //loop though our routes and add them new route instances
-        foreach($routes as $route) {
+        foreach($routes as $route) { 
 
             //create our new Route instance and store
             $this->addRoute(new Route($route['uri'], $route['pattern'], $route['filter']));
