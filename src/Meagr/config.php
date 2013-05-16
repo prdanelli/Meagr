@@ -42,26 +42,26 @@ class Config {
 		return array(
 
 				// //default system routes
-				array(
+				'home' => array(
 					'uri' => '__HOME__', 
 					'pattern' => '\Meagr\Controller::GET_index'
 				),
-				array(
+				'404' => array(
 					'uri' => '__404__', 
 					'pattern' => '\Meagr\Controller::GET_404'
 				), 
 				//mvc
-				array(
+				'mvc' => array(
 					'uri' => '{domain}/{class}/{method}/', 
 					'pattern' => '\{modules}\{controllers}\{class}::{method}'
 				), 
 				//hmvc
-				array(
+				'hmvc' => array(
 					'uri' => '{domain}/{class}/{method}/', 
 					'pattern' => '\{modules}\{class}\{controllers}\{class}::{method}'
 				),
 				//Sub_Controller::Method()
-				array(
+				'subcontroller' => array(
 					'uri' => '{domain}/{class}/{method}/', 
 					'pattern' => '\{modules}\{class}\{controllers}\{subclass}::{submethod}'
 				),
@@ -70,7 +70,7 @@ class Config {
 				// by the same name and a method of that name inside the controllers folder
 				// so http://admin.yourdomain.com => \modules\admin\admin\controllers\admin::GET_index
 				// this is a fallback for when no class method is found
-				array(
+				'subdomain' => array(
 					'uri' => '{subdomain}.{domain}/{class}/{method}/', 
 					'pattern' => '\{modules}\{subdomain}\{class}\{controllers}\{class}::{method}', 
 					'filter' => function($object, $args = null){ 
@@ -106,7 +106,7 @@ class Config {
 					}
 				),
 				//catch all for pages so: http://prwhitehead.co.uk/photography => \Modules\Controllers\Page::GET_photography
-				array(
+				'pages' => array(
 					'uri' => '{domain}/{args}', 
 					'pattern' => '\{modules}\{controllers}\Page::{args}', 
 					'filter' => function($object, $args = null) {
@@ -348,7 +348,7 @@ class Config {
 		}
 
 		//check for environment dependant config (which takes prescident)
-		$class = '\modules\\'. SITE_SUBDOMAIN .'Config\\' . ucwords(ENVIRONMENT) . '\Config';
+		$class = '\Modules\\'. (defined('SITE_SUBDOMAIN') ? SITE_SUBDOMAIN . '\\' : '') .'Config\\' . ucwords(ENVIRONMENT) . '\Config'; 
 		if (class_exists($class)) {
 			$reflection = new \ReflectionClass($class);		
 

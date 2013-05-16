@@ -78,7 +78,6 @@ class Response {
     );
 
     
-    
     /**
     * define out sington instance
     *
@@ -198,13 +197,19 @@ class Response {
         $route = $this->router->route;
 
         //properly capitalise our namespace
-        Router::namespaceRoutePattern($route);
+        $route = Router::namespaceRoutePattern($route);
 
         //get our arguments
         $args = ($this->router->arguments) ? : array(); 
         
         //get our class and method
         list($class, $method) = explode('::', $route->getMappedPattern());
+
+        \Meagr\Debug::init('log')->add(array('message' => 'Route: ' . $class . ' ' . $method,
+                                            'class' => __METHOD__, 
+                                            'status' => 'success', 
+                                            'backtrace' => Debug::backtrace()));
+
 
         //start our buffering
         ob_start();
