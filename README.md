@@ -8,7 +8,7 @@ Folder structure
 
 Meagr allows you some flexibility when setting up your application. The main set of system classes can be found in the composer package which is added to your vendor folder with the following require command in your composer.json file
 
-    :::php
+    
     "require": {
         "prwhitehead/meagr": "dev-master"
     }
@@ -19,27 +19,27 @@ The files are required for the routing, config etc. The 'modules' folder if wher
 
 Modules modules should be namespaced as follows
 
-    :::php  
+      
     /Modules/YourModulesName
 
 This namespace matches the folder name and structure of your controllers/models/views folders
 
-    :::php  
+      
     /Modules/YourModulesName/Controllers/Classname
 
 Sub controllers can also be used by using the underscore in the filename. 
 
-    :::php  
+      
     /admin/user/create
 
 Would first look to find an Admin controller class, which contained a GET_user method and pass in 'create' as a variable. The next check would look to find the Admin_User controller which is in admin_user.php within the admin app folder
 
-    :::php  
+      
     /modules/admin/controllers/admin_user.php
 
 For the method:
 
-    :::php  
+      
     Admin_User::GET_create();
 
 Routing
@@ -47,35 +47,35 @@ Routing
 
 By default a website can use either an MVC or HMVC structure, which uses:
 
-    :::php 
+     
     http://www.example.com/news/latest
 
 Which would route to either: 
 
-    :::php 
+     
     modules/news/controllers/news.php
 
 or: 
 
-    :::php 
+     
     modules/controllers/news.php
 
 The HMVC structure takes presidence and over MVC which is the default. 
 
 If we were using the HMVC structure for our app modules, the system will look for the following class and method
 
-    :::php 
+     
     <?  
     Modules\News\Controllers\News::GET_latest();
 
 If there is an even number of arguments the system will attempt to assign them to key => value pairs. So a URL as follows: 
 
-    :::php  
+      
     <your domain>/admin/user/add/this/that/and/again/hi
 
 Should be parsed into an array as such after the method Admin_User::GET_add() has been found: 
 
-    :::php  
+      
     <?
     Array
     (
@@ -86,12 +86,12 @@ Should be parsed into an array as such after the method Admin_User::GET_add() ha
 
 The original URI segments are always passed as an array called $segments and if the segment count is even, then $pairs will hold the parsed key => value pairs. So the following URI: 
 
-    :::php  
+      
     <your domain>/admin/user/something/else/that/is/passed/as/segments/again/
 
 Would translate to accessing Admin_user class and if no GET_something() method could be found, the system will check for a default controller (usually GET_index()) and then pass the following array to the method, if found: 
 
-    :::php  
+      
     <?
     Array
     (
@@ -123,20 +123,20 @@ Using views
 
 To include a view in one of your Controllers use the following: 
 
-    :::php  
+      
     <?
     echo \Meagr\View::view('ModulesName::view-filename');
 
 To pass data to the a simple view file which is located in the sites default app/view folder: 
 
-    :::php  
+      
     <?
     \Meagr\View::view('test', compact('data'));
 
 Using the Model
 ---------------
 
-    :::php  
+      
     <?
     $news = Modules\Models\News::init()->tableAlias('n')
     	->distinct()
@@ -149,7 +149,7 @@ Using the Model
 
 Returns: 									
 
-    :::php  
+      
     <?
     Array
     (
@@ -177,7 +177,7 @@ Returns:
 
 Because the Database class impliments the PHP SPL ArrayAccess we can also do this: 
 
-    :::php  
+      
     <?    
     //get member
     $member = Modules\Models\Member::init()->where('id', $id);
@@ -194,7 +194,7 @@ Config
 
 In order to use different config's for your development / production / staging servers etc, add a 'config' folder to your app folder with the environment as a sub folder and a config.php file which is properly namespaced within that. The envionrment to be used is set with the "ENVIRONMENT" constant, so:
 
-    :::php
+    
     <? 
     define("ENVIRONMENT", 'production');
 
@@ -206,7 +206,7 @@ Would mean the system looks for the following class:
 
 Which would match: 
 
-    :::php  
+      
     modules/config/production/config.php
 
 As a fail back, if you wish to just use a single config file in your app, include it within the base config directory and it will be included. 	
@@ -216,13 +216,13 @@ Input
 
 Use to get and set $_GET, $_POST, $_SESSION and $_COOKIE values. 
 
-    :::php  
+      
     <?
     echo \Meagr\Input::get('param_name'); 	
 
 To set a value: 
 
-    :::php  
+      
     <?
     \Meagr\Input::get('param_name', 'value');	
 
@@ -231,25 +231,25 @@ Bcrypt
 
 Instantiate Bcrypt(); 
 
-    :::php  
+      
     <?
     $b = new \Meagr\Bcrypt();
 
 Hash your password / input data
 
-    :::php  
+      
     <?
     $password = $b->hash('mypassword01');
 
 Get the salt for this instance of the Bcrypt class
 
-    :::php 
+     
     <? 
     $salt = $b->getSalt(); 
 
 Now you can store the salt next to the users password and validate that next time they login via: 
 
-    :::php  
+      
     <?
     $new = new Bcrpyt(); 
     $new->setSalt($user_salt); 
@@ -264,25 +264,25 @@ The timer class is for seeing how long events are taking and works on the 'multi
 
 Init the timer with your name, in this case 'db'
 
-    :::php  
+      
     <?
     \Meagr\Timer::init('db');
 
 Echo the difference in the time since the timer was started
 
-    :::php  
+      
     <?
     echo \Meagr\Timer::init('db')->diff(); 
 
 alternatively you can use: 
 
-    :::php  
+      
     <?
     \Meagr\Timer::init('db')->stop();
 
 ... sometime later
 
-    :::php  
+      
     <?
     echo \Meagr\Timer::init('db')->diff();
 
@@ -291,7 +291,7 @@ Member
 
 Add users to the member table as follows. First instantiate the Bcrypt class, and generate the users unique salt, then you can hash their password.  
 
-    :::php     
+         
     <? 
     $b = new \Meagr\Bcrypt(); 
     $salt = $b->getSalt();
@@ -299,7 +299,7 @@ Add users to the member table as follows. First instantiate the Bcrypt class, an
 
 Now we can create a new instance of the member object and save it to the database.
 
-    :::php      
+          
     <?
     $test = new Modules\Models\Member(); 
     $test->email = 'users@emailadderss.com';
@@ -311,7 +311,7 @@ Now we can create a new instance of the member object and save it to the databas
 
 Thats half the work done. Now we can check the user is valid from within functions and methods around the site by doing the following: 
 
-    :::php  
+      
     <?    
     $member = Modules\Models\Member::init()->where('email', $email);
 
@@ -346,7 +346,7 @@ Thats half the work done. Now we can check the user is valid from within functio
 
 Logging a user out of their account / unsetting their session is alot easier: 
 
-    :::php  
+      
     <?
     \Meagr\Auth::destroy(); 
 
@@ -355,7 +355,7 @@ The form Class
 
 Create a new form with something similar to this: 
 
-    :::php  
+      
     <?
     $form = Meagr\Form::init(array(
         'id' => 'form_id', 
@@ -368,7 +368,7 @@ Here we pass in our array of form set up data, including all the normal form tag
 
 You can now add input field data view addFields() or addField(). The later only expects a single array of input data, whereas the former will only accept a multidimensional array of more than one input field data, as the example below shows: 
 
-    :::php 
+     
     <?         
     $form->addFields(
         array(
@@ -446,7 +446,7 @@ The 'append' arrays create a drop down menu.
 
 All items within the array which are not used specifically by the form classs are turned into attributes and values, so:
 
-    :::php  
+      
     <?
     'email' => array(
         'id' => 'email', 
@@ -458,12 +458,12 @@ All items within the array which are not used specifically by the form classs ar
 
 Would automatically create:
 
-    :::php  
+      
     <input placeholder="john@smith.com" help="Please enter a valid email address" class="form-element" id="email" name="email" />              
 
 Validation required as follows:  
 
-    :::php  
+      
     <?
     'validate' => array(
         'not' => array(
@@ -477,19 +477,19 @@ This passes the value for the input to Validate class, which uses the Validate::
 
 HTML can be added to the form via the use of: 
 
-    :::php  
+      
     <?
     $form->addHTML('<div class="container">'); 
 
 The later on, you may close the div: 
 
-    :::php  
+      
     <?
     $form->addHTML('</div>');   
 
 Once you have setup your form just the way you like it, use the build() method to echo our the form to the screen: 
 
-    :::php  
+      
     <?
     $form->build();     
 
@@ -500,13 +500,13 @@ The Nonce class is used to validate requests made by the system, for form inputs
 
 First create your nonce form input field as follows: 
 
-    :::php 
+     
     <? 
     \Meagr\Nonce::input('nonce-name');
 
 Now, to check our request is coming from an authorised user within the site:
 
-    :::php  
+      
     <?
     if (\Meagr\Nonce::valid($_POST['_nonce'], 'nonce-name')){
         //do stuff as request is valid 
@@ -514,12 +514,12 @@ Now, to check our request is coming from an authorised user within the site:
 
 We can also create GET requests for our requests:
 
-    :::php  
+      
     <a href="index.php?<?=\Meagr\Nonce::string('nonce-name'); ?>">Link One</a>
 
 Which is validated the same way: 
 
-    :::php  
+      
     <?
     if (\Meagr\Nonce::valid($_GET['_nonce'], 'nonce-name')){
         //do stuff as request is valid 
@@ -530,13 +530,13 @@ Arr (Array class)
 
 Use . to seperate array level
 
-    :::php 
+     
     <? 
     $array = array(
         'one' => array('oneone' => 'hello', 'onetwo' => 'sup'), 'two' => 'goodbye', 'three' => 'one', 'four' => 2, 'five' => '3'
     );
     
-    :::php  
+      
     <?
     p(\Meagr\Arr::get($array, 'one.onetwo'));
     \Meagr\Arr::set($array, 'one.onetwo', 'init');
@@ -547,14 +547,14 @@ Amazon AWS S3
 
 Bucket names, keys and secret keys are entered within the Config::s3() array. To then create a bucket you can use: 
 
-    :::php  
+      
     <?
     $s3 = \Meagr\s3::init(); 
     $s3->createBucket('testing_bucket_name');
 
 To list your buckets, from the details that have been entered into the Config::s3() method
 
-    :::php  
+      
     <?
     $buckets = $s3->listBuckets();
     if (! empty($buckets)) {
@@ -565,7 +565,7 @@ To list your buckets, from the details that have been entered into the Config::s
 
 To test if a bucket exists prior to creating it: 
 
-    :::php  
+      
     <?
         $b = 'newish';
         if (! $s3->bucketExists($b)) {
@@ -574,13 +574,13 @@ To test if a bucket exists prior to creating it:
 
 Check where a bucket is currently stored: 
 
-    :::php  
+      
     <?
     echo $s3->getBucketLocation('testing_bucket');
 
 Test if a bucket exists and whether a file has been uploaded before continuing: 
 
-    :::php
+    
     <? 
     $file = PUBLIC_PATH . '/css/bootstrap.css';
     $bucket = 'newish';
@@ -594,7 +594,7 @@ Test if a bucket exists and whether a file has been uploaded before continuing:
 
 $contents will contain something like the following when printed to the screen: 
 
-    :::php 
+     
     <? 
     p($contents);
 
@@ -629,20 +629,20 @@ $contents will contain something like the following when printed to the screen:
 
 To get the contents of a file which is stored on an s3 bucket: 
 
-    :::php
+    
     <? 
     //request the file by its filename and the bucket name
     $file = $s3->getFile('bootstrap.css', $bucket);
 
 To delete a file from a bucket: 
 
-    :::php
+    
     <?
     $s3->deleteFile('bootstrap.css', $bucket);
 
 To copy a file from one bucket to another: 
 
-    :::php
+    
     <?
     $copy = $s3->copyFile($new_filename, $new_bucket, $current_filename, $current_bucket)); 
 
@@ -658,7 +658,7 @@ Additionally to output caching, there is also css and js contatination to save h
 
 The following is a snippet taken from the Response class and used to check if the current URI has an HTML cache file associated with it, if none is found, or the time since the file was created has passed our time limit, a new file is created and returned to the user. 
 
-    :::php  
+      
     <? 
     //init with the default key which is then turned into our current URI
     $cache = Cache::init(); 
@@ -683,7 +683,7 @@ The system allows for css files to be added to an array which is passed into the
 
 This would go in the head of your template:
 
-    :::php  
+      
     <? /*incude the css files in the cache file */ 
     $array = array(
         PUBLIC_PATH . "/css/normalize.css", 
@@ -694,7 +694,7 @@ This would go in the head of your template:
 
 Alternatively, by changing the init('css') to init('js'), the javaScript filename is take from the Config::cache() methods array of values and used. 
 
-    :::php
+    
     <? /*incude the javascript files in the cache file */ 
     $array = array(
         PUBLIC_PATH . "/js/vendor/modernizr-2.6.2.min.js",
@@ -712,19 +712,19 @@ Meagr allows you to bind and trigger actions with a simple hooking system. To bi
 
 First example using two strings, or the class and method names: 
 
-    :::php 
+     
     <?
     \Meagr\Hook::bind('header', array('Home', 'additionalCss'));
 
 Second example providing as array containing an instance of an object and a method name: 
 
-    :::php 
+     
     <?
     \Meagr\Hook::bind('header', array(new Home, 'additionalCss'));
 
 The hook can then be triggered within your code:
 
-    :::php
+    
     <?
     $css = Meagr\Hook::trigger('additionalCss');
     foreach($css as $file){
@@ -739,7 +739,7 @@ Emails + SMTP
 
 Meagr has an Email class that allows for SMTP mailing with a simple to use wrapper for the PHPMailer class. Each Email class method returns $this which allows for method chaining
 
-    :::php
+    
     <?
     //initialise the class
     \Meagr\Email::init()
@@ -782,7 +782,7 @@ Meagr has an Email class that allows for SMTP mailing with a simple to use wrapp
 
 Content can be added through a class method which echo's out content, whcih is then buffered and added to the email content to be sent. Above the addContent() method passes in an array containing a class name with a fully qualified namespace and a method named 'email', a second optional array of values can be passed in which is extracted within the email content. The email() method can look as follows: 
 
-    :::php
+    
     <?
     namespace Modules\Controllers; 
 
@@ -794,7 +794,7 @@ Content can be added through a class method which echo's out content, whcih is t
 
 Some values are set through the site / environment config which is then used to configure defaults as well as SMTP auth values: 
 
-    :::php 
+     
     <?
     class Config { 
         public static function email() {
@@ -818,7 +818,7 @@ Meagr has a simple FTP interface which allows files to be up and downloaded, del
 
 The FTP class can be used to connect to multiple ftp servers similantiously by adding their details to the Config class in an ftp() method as follows: 
 
-    :::php 
+     
     <? 
     class Config {
 
@@ -837,20 +837,20 @@ When the FTP class is instantiated, the $connection_name variable is used to det
 
 To instantiate the FTP class and connect to the server with the default connection details: 
 
-    :::php 
+     
     <? 
     $ftp = \Meagr\FTP::init('default');
     $ftp->connect();
 
 Method chaining is also available: 
 
-    :::php 
+     
     <?
     $ftp = \Meagr\FTP::init('default')->connect();
 
 To move around the FTP server folder structure the cd() method is available. Pass in the dirctory you wish to navigate to. Each time you change directory the FTP class keeps a train of the present working directory which is accessible through pwd(). So to move from the root server level to a subfolder you can use: 
 
-    :::php 
+     
     <? 
     //change to a subfolder called 'wp-content'
     $ftp->cd('/wp-content');
@@ -863,7 +863,7 @@ To move around the FTP server folder structure the cd() method is available. Pas
 
 The FTP class will throw exceptions when it cannot perform an action, so wrap your commands within a try/catch: 
 
-    :::php 
+     
     <? 
     try{
         $ftp->mkdir('test');
@@ -874,7 +874,7 @@ The FTP class will throw exceptions when it cannot perform an action, so wrap yo
 
 ...or you could simple do this and use the inDir() method which performs a check on the current directory listing before returning a booleon result: 
 
-    :::php
+    
     <?
     //check for a directory within the present working directory
     if (! $ftp->exists('test')) {
@@ -885,7 +885,7 @@ The FTP class will throw exceptions when it cannot perform an action, so wrap yo
 
 In order to up or download a file to the current connection you can use the following:
 
-    :::php
+    
     <? 
     //push a file to the current working directory
     $ftp->putFile(PUBLIC_PATH . '/css/bootstrap.css');
@@ -895,7 +895,7 @@ In order to up or download a file to the current connection you can use the foll
 
 To delete a file from a connection: 
 
-    :::php 
+     
     <? 
     //if no /directory/structure is passed, the class assumes that 
     //you wish to delete the file from the present working directory
@@ -903,20 +903,20 @@ To delete a file from a connection:
 
 To change the access mode of a file (chmod) you can do the following 
 
-    :::php
+    
     <?
     //a string is required, which will be padded to the required 4 characters
     $ftp->chmod('bootstrap.css', '777'); //equates to 0777
 
 To rename a file, you can simple add the file and the new name and the class will assume the present working directory needs to be added: 
 
-    :::php 
+     
     <? 
     $ftp->rename('bootstrap.css', 'b.css');
 
 However rename can be used to move files and folders by passing in a directory to the second parameter.
 
-    :::php 
+     
     <? 
     $ftp->rename('bootstrap.css', '/home/bootstrap.css');  
 
@@ -925,7 +925,7 @@ Debug
 
 To allow you to debug apps and log their behaviour Meagr has a flexible Debug class built in and in use. 
 
-    :::php 
+     
     <? 
     //init the class and pass in the the collection name, which in this case is 'log'
     \Meagr\Debug::init('log')->add(
@@ -943,7 +943,7 @@ To allow you to debug apps and log their behaviour Meagr has a flexible Debug cl
 
 You can pass in any set of key to value pairs for your logging, which is why the debug class is so flexible. The Debug::output() method will take the keys from the first entry and use them from then on. 
 
-    :::php 
+     
     <?
     //to print our log
     echo \Meagr\Debug::init('log')
@@ -956,20 +956,20 @@ Languages
 ---------
 By the use of seperate language files, Meagr supports the swapping of language strings via the traditional __() function found in the 'core/helpers.php' file.  
 
-    :::php 
+     
     <? 
     echo __('my short sentence');
 
 This function is a wrapper to the OOP method:
 
-    :::php
+    
     <? 
     //pass in our LANG_CODE, which should match the name of the file in our language folder
     \Meagr\Language::init(LAMG_CODE)->get($language_string, $default);
 
 Language files much match the LANG_CODE with an prefixed '.php'. So if LANG_FILE is set to be 'EN', then Meagr will check for an array called $lanaguage within the following locations: 
 
-    :::php
+    
     /* our default location */
     <SITE_PATH>/meagr/modules/config/en.php
 
@@ -978,7 +978,7 @@ Language files much match the LANG_CODE with an prefixed '.php'. So if LANG_FILE
 
 Within our 'en.php' file we need to simply create an array of key => value pairs, the keys match the the $language_string from above. 
 
-    :::php
+    
     <?
     $language = array(
             'hello' => 'hello, welcome to my site', 
@@ -990,7 +990,7 @@ Feedback
 --------
 The feedback class is available to store session data about form feedback or anything that needs to be recalled when a page is refreshed or submitted elsewhere. 
 
-    :::php
+    
     <? 
     //initialise the type of feedback we want to give
     $feedback = \Meagr\Feedback::init('errors');
@@ -1021,7 +1021,7 @@ Images
 
 Create a simple thumbnail 100px width by 80px height: 
 
-    :::php
+    
     <?
     \Meagr\Image::init()
                 ->open(PUBLIC_URL . '/test.jpg')
@@ -1035,7 +1035,7 @@ Create a simple thumbnail 100px width by 80px height:
         
 Most of the available options are listed below: 
 
-    :::php
+    
     <?
     $t = \Meagr\Image::init()
 
@@ -1072,7 +1072,7 @@ Most of the available options are listed below:
 
 To Turn the contents of a directory into a collage, the following can be used: 
 
-    :::php
+    
     <?
     //loop through our directory and record the images
     foreach (glob(PUBLIC_PATH . '/images/*.png') as $path) {
